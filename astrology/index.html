@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Astrology Face Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        header {
+            margin-top: 40px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .camera-container {
+            margin-top: 20px;
+            background: #1a1f2a;
+            border-radius: 15px;
+            padding: 20px 30px 30px;
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 720px;
+            max-width: 95vw;
+        }
+
+        video {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+            max-width: 100%;
+            width: 640px;
+            height: 480px;
+            background-color: #000;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #ffcc00;
+            border: none;
+            color: #1a1f2a;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 14px 50px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.6);
+        }
+        button:hover {
+            background: #e6b800;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #status {
+            margin-top: 15px;
+            font-style: italic;
+            min-height: 1.2em;
+            font-size: 1rem;
+        }
+
+        #result {
+            margin-top: 25px;
+            width: 100%;
+            background: #0d1120;
+            padding: 25px;
+            border-radius: 15px;
+            font-size: 1rem;
+            color: #ffd600;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+            overflow-wrap: break-word;
+        }
+
+        h3 {
+            color: #ffd600;
+            border-bottom: 2px solid #ffd600;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        footer {
+            margin-top: auto;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            color: #c7c7c7;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>🔮 Astrology Face Analysis 🔮</header>
+
+    <div class="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <button onclick="capturePhoto()">Capture & Analyze</button>
+        <p id="status"></p>
+        <div id="result"></div>
+    </div>
+
+    <footer>© 2025 Fun Astrology App. All rights reserved.</footer>
+
+    <script>
+        const video = document.getElementById('video');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((err) => {
+                alert('Error accessing webcam: ' + err);
+                status.textContent = "Webcam access denied or not available.";
+            });
+
+        function capturePhoto() {
+            if (video.readyState !== 4) {
+                status.textContent = "Camera not ready. Please wait...";
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataURL = canvas.toDataURL('image/png');
+            status.textContent = "Analyzing... please wait.";
+            result.innerHTML = "";
+
+            fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: dataURL })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    status.textContent = "Error: " + data.error;
+                    result.innerHTML = "";
+                    return;
+                }
+                status.textContent = "Analysis complete!";
+
+                let html = `<h3>Life Predictions</h3><ul>`;
+                const life = data.life_predictions || {};
+                for (const [key, val] of Object.entries(life)) {
+                    html += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${val}</li>`;
+                }
+                html += `</ul>`;
+
+                html += `<h3>Personality Traits</h3><ul>`;
+                const personality = data.personality_traits || {};
+                for (const [key, val] of Object.entries(personality)) {
+                    html += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${typeof val === 'number' ? val.toFixed(2) : val}</li>`;
+                }
+                html += `</ul>`;
+
+                if (data.lucky_elements) {
+                    html += `<h3>Lucky Elements</h3><ul>`;
+                    for (const [key, val] of Object.entries(data.lucky_elements)) {
+                        html += `<li><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${val}</li>`;
+                    }
+                    html += `</ul>`;
+                }
+
+                if (data.career_guidance) {
+                    html += `<h3>Career Guidance</h3>`;
+                    const primary = data.career_guidance.primary_recommendation;
+                    html += `<p><strong>Primary Recommendation:</strong> ${primary.field}<br><em>${primary.description}</em><br>Compatibility Score: ${primary.compatibility_score}</p>`;
+
+                    const secondary = data.career_guidance.secondary_recommendations || [];
+                    if (secondary.length > 0) {
+                        html += `<p><strong>Secondary Recommendations:</strong></p><ul>`;
+                        secondary.forEach(c => {
+                            html += `<li>${c.field} - ${c.compatibility_score}<br><em>${c.description}</em></li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                }
+
+                result.innerHTML = html;
+            })
+            .catch(err => {
+                status.textContent = "Error during analysis: " + err;
+                result.innerHTML = "";
+            });
+        }
+    </script>
+
+</body>
+</html>
