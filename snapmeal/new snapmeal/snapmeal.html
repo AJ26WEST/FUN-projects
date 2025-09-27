@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SnapMeal | AI Nutrition Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(120deg, #6dd5ed 0%, #2193b0 100%);
+      color: #222;
+      margin: 0;
+    }
+    .sidebar {
+      position: fixed;
+      width: 240px;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      background: #fff;
+      box-shadow: 3px 0 10px #4561a422;
+      z-index: 99;
+      transition: 0.3s;
+    }
+    .sidebar h2 {
+      text-align: center;
+      color: #2193b0;
+      margin-bottom: 18px;
+      padding: 16px 0;
+      font-weight: 700;
+    }
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar-nav li {
+      margin: 14px 0;
+      padding: 12px 30px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+    }
+    .sidebar-nav li.active,
+    .sidebar-nav li:hover {
+      background: #f5fcff;
+      border-left: 4px solid #2193b0;
+      color: #2193b0;
+    }
+    .sidebar-nav li i {
+      margin-right: 9px;
+    }
+    .main-content {
+      margin-left: 240px;
+      padding: 32px;
+      min-height: 100vh;
+    }
+    .page {
+      display: none;
+      animation: fadeIn 0.9s;
+    }
+    .page.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    h1 {
+      margin-bottom: 34px;
+      font-weight: 700;
+    }
+    .card {
+      background: #f0fafc;
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 20px #6dd5ed22;
+    }
+    .dashboard-grid {
+      display: grid;
+      gap: 22px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 13px;
+      padding: 22px;
+      text-align: center;
+      box-shadow: 0 3px 14px #6dd5ed18;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-6px);
+    }
+    .stat-icon {
+      font-size: 2.3em;
+      margin-bottom: 7px;
+      color: #2193b0;
+    }
+    .feature-title {
+      font-size: 1.13em;
+      font-weight: bold;
+    }
+    .upload-area {
+      border: 2px dashed #2193b0;
+      border-radius: 9px;
+      background: #fafcff;
+      padding: 42px 18px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: border-color 0.3s;
+    }
+    .upload-area:hover {
+      border-color: #45a049;
+    }
+    .upload-icon {
+      font-size: 3em;
+      color: #2193b0;
+      margin-bottom: 15px;
+    }
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+    .nutrition-card {
+      background: linear-gradient(130deg, #efefef, #d0f3fa);
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .food-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px #2193b011;
+    }
+    .food-header {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 6px;
+      color: #3246a8;
+    }
+    .form-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      margin-bottom: 12px;
+      flex: 1;
+    }
+    .form-group label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1.5px solid #ececec;
+      border-radius: 7px;
+      font-size: 1em;
+    }
+    .btn {
+      background: linear-gradient(120deg, #2193b0, #6dd5ed);
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      padding: 10px 22px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: linear-gradient(120deg, #6dd5ed, #2193b0);
+    }
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 90px;
+      }
+      .sidebar h2,
+      .sidebar-nav li span {
+        display: none;
+      }
+      .sidebar-nav li {
+        padding-left: 12px;
+      }
+      .main-content {
+        margin-left: 90px;
+      }
+    }
+    @media (max-width: 600px) {
+      .main-content {
+        padding: 18px;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2><i class="fas fa-utensils"></i> SnapMeal</h2>
+    <ul class="sidebar-nav">
+      <li class="active" onclick="showPage(event, 'dashboard')"><i class="fas fa-home"></i> <span>Dashboard</span></li>
+      <li onclick="showPage(event, 'food-detection')"><i class="fas fa-camera"></i> <span>Food Detection</span></li>
+      <li onclick="showPage(event, 'macro-calculator')"><i class="fas fa-calculator"></i> <span>Macros</span></li>
+      <li onclick="showPage(event, 'bmi-calculator')"><i class="fas fa-weight"></i> <span>BMI</span></li>
+      <li onclick="showPage(event, 'calorie-tracker')"><i class="fas fa-chart-line"></i> <span>Calorie Tracker</span></li>
+      <li onclick="showPage(event, 'bodyfat-calculator')"><i class="fas fa-percentage"></i> <span>Body Fat %</span></li>
+    </ul>
+  </div>
+  <div class="main-content">
+    <!-- Dashboard Page -->
+    <div class="page active" id="dashboard">
+      <h1>Welcome to SnapMeal</h1>
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-camera"></i></div>
+          <div class="feature-title">Food Detection</div>
+          <div>Analyze your meals instantly using AI!</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-calculator"></i></div>
+          <div class="feature-title">Macro Calculator</div>
+          <div>Find your personalized nutrient targets.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-weight"></i></div>
+          <div class="feature-title">BMI Calculator</div>
+          <div>Monitor your BMI and health status.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+          <div class="feature-title">Tracker</div>
+          <div>Track your daily calories and progress.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+          <div class="feature-title">Body Fat %</div>
+          <div>Calculate your body fat percentage.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 22px;">
+        <h2>How It Works</h2>
+        <ul>
+          <li>Start at <strong>Food Detection</strong> to recognize foods from photos.</li>
+          <li>Use the <strong>Macro</strong> and <strong>BMI</strong> calculators to learn about your body needs.</li>
+          <li><strong>Calorie Tracker</strong> lets you log meals and see progress.</li>
+          <li><strong>Body Fat % Calculator</strong> estimates your body fat using waist and hip measurements.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Food Detection Page -->
+    <div class="page" id="food-detection">
+      <h1><i class="fas fa-camera"></i> AI Food Detection</h1>
+      <div class="card">
+        <div class="upload-area" id="uploadArea">
+          <i class="fas fa-cloud-upload-alt upload-icon"></i>
+          <div>Drop image or click to upload</div>
+          <div style="color: #888; font-size: 0.9em;">(JPG, PNG, WebP)</div>
+        </div>
+        <input type="file" id="imageInput" style="display:none;" accept="image/*" />
+        <div id="previewSection" style="display:none; margin-top: 15px;">
+          <img id="imagePreview" style="max-width: 260px; max-height: 180px; border-radius: 12px" />
+        </div>
+        <button class="btn" id="analyzeBtn" style="display:none; margin-top: 14px;">Analyze Food</button>
+        <div style="margin: 25px 0; color: crimson;" id="errorMessage"></div>
+        <div class="food-results" id="resultsSection" style="display:none;">
+          <h3>Nutrition Summary</h3>
+          <div class="nutrition-grid" id="totalNutrition"></div>
+          <h3 style="margin-top: 22px;">Detected Foods</h3>
+          <div id="foodItems"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Macro Calculator Page -->
+    <div class="page" id="macro-calculator">
+      <h1><i class="fas fa-calculator"></i> Macro Calculator</h1>
+      <div class="card">
+        <form id="macroForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" class="form-control" id="age" min="1" max="120" required />
+            </div>
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select class="form-control" id="gender" required>
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="weight">Weight (kg)</label>
+              <input type="number" class="form-control" id="weight" step="0.1" min="1" required />
+            </div>
+            <div class="form-group">
+              <label for="height">Height (cm)</label>
+              <input type="number" class="form-control" id="height" min="1" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="activity">Activity Level</label>
+            <select class="form-control" id="activity" required>
+              <option value="">Select</option>
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Light</option>
+              <option value="1.55">Moderate</option>
+              <option value="1.725">Very Active</option>
+              <option value="1.9">Super Active</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="goal">Goal</label>
+            <select class="form-control" id="goal" required>
+              <option value="">Select</option>
+              <option value="lose">Weight Loss</option>
+              <option value="maintain">Maintain</option>
+              <option value="gain">Weight Gain</option>
+            </select>
+          </div>
+          <button type="button" class="btn" onclick="calculateMacros()">Calculate Macros</button>
+        </form>
+        <div style="display:none;" id="macroResults">
+          <h3>Your Macros</h3>
+          <div class="nutrition-grid" id="macroData"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BMI Calculator Page -->
+    <div class="page" id="bmi-calculator">
+      <h1><i class="fas fa-weight"></i> BMI Calculator</h1>
+      <div class="card">
+        <form id="bmiForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bmi-weight">Weight (kg)</label>
+              <input type="number" class="form-control" id="bmi-weight" step="0.1" min="1" required />
+            </div>
+            <div class="form-group">
+              <label for="bmi-height">Height (cm)</label>
+              <input type="number" class="form-control" id="bmi-height" min="1" required />
+            </div>
+          </div>
+          <button type="button" class="btn" onclick="calculateBMI()">Calculate BMI</button>
+        </form>
+        <div style="display:none;" id="bmiResults">
+          <h3>BMI Result</h3>
+          <div class="nutrition-grid" id="bmiData"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calorie Tracker Page -->
+    <div class="page" id="calorie-tracker">
+      <h1><i class="fas fa-chart-line"></i> Calorie Tracker</h1>
+      <div class="card">
+        <div class="form-group">
+          <label for="daily-goal">Daily Goal</label>
+          <input type="number" class="form-control" id="daily-goal" value="2000" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="meal-name">Food Item</label>
+            <input type="text" class="form-control" id="meal-name" placeholder="e.g. Apple, Sandwich" />
+          </div>
+          <div class="form-group">
+            <label for="meal-calories">Calories</label>
+            <input type="number" class="form-control" id="meal-calories" min="1" />
+          </div>
+        </div>
+        <button type="button" class="btn" onclick="addMeal()">Add Food</button>
+        <button type="button" class="btn" onclick="resetTracker()" style="background: #ff4757;">Reset Today</button>
+        <div style="display:none;" id="trackerResults">
+          <h3>Today's Progress</h3>
+          <div class="nutrition-grid" id="trackerData"></div>
+          <h3>Today's Meals</h3>
+          <div id="mealList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body Fat Percentage Calculator Page -->
+    <div class="page" id="bodyfat-calculator">
+      <h1><i class="fas fa-percentage"></i> Body Fat Percentage Calculator</h1>
+      <div class="card">
+        <form id="bodyFatForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bf-gender">Gender</label>
+              <select class="form-control" id="bf-gender" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bf-age">Age (years)</label>
+              <input type="number" class="form-control" id="bf-age" min="10" max="120" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bf-weight">Weight (kg)</label>
+              <input type="number" class="form-control" id="bf-weight" step="0.1" min="1" required />
+            </div>
+            <div class="form-group">
+              <label for="bf-waist">Waist circumference (cm)</label>
+              <input type="number" class="form-control" id="bf-waist" step="0.1" min="1" required />
+            </div>
+          </div>
+          <div class="form-row" id="bf-hip-row" style="display: none;">
+            <div class="form-group">
+              <label for="bf-hip">Hip circumference (cm)</label>
+              <input type="number" class="form-control" id="bf-hip" step="0.1" min="1" />
+            </div>
+          </div>
+          <button type="button" class="btn" onclick="calculateBodyFat()">Calculate Body Fat %</button>
+        </form>
+        <div style="display: none; margin-top: 20px;" id="bodyFatResults">
+          <h3>Estimated Body Fat Percentage</h3>
+          <div class="nutrition-card" id="bfResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showPage(event, pageId) {
+      document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+
+      document.querySelectorAll('.sidebar-nav li').forEach((li) => li.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    // Food Detection logic
+    let selectedFile = null;
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const previewSection = document.getElementById('previewSection');
+    const imagePreview = document.getElementById('imagePreview');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#4CAF50';
+    });
+    uploadArea.addEventListener('dragleave', () => (uploadArea.style.borderColor = '#2193b0'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#2193b0';
+      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) return showError('Invalid file type.');
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        previewSection.style.display = 'block';
+        analyzeBtn.style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+      showError('');
+    }
+
+    function showError(msg) {
+      document.getElementById('errorMessage').innerText = msg;
+    }
+
+    analyzeBtn.addEventListener('click', analyzeImage);
+
+    async function analyzeImage() {
+      if (!selectedFile) return showError('Select an image first!');
+      showError('Analyzing...');
+      document.getElementById('resultsSection').style.display = 'none';
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      try {
+        const response = await fetch('/detect', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.status === 'success') {
+          showError('');
+          document.getElementById('totalNutrition').innerHTML = `
+            <div class="nutrition-card"><b>Calories</b><br>${data.total_nutrition.calories}</div>
+            <div class="nutrition-card"><b>Protein</b><br>${data.total_nutrition.protein}g</div>
+            <div class="nutrition-card"><b>Fat</b><br>${data.total_nutrition.fat}g</div>
+            <div class="nutrition-card"><b>Carbs</b><br>${data.total_nutrition.carbs}g</div>
+          `;
+          let html = '';
+          for (let f of data.detections) {
+            html += `<div class="food-card">
+              <div class="food-header">${f.food_name} <span style="font-size:.89em;color:#45a049;padding-left:8px;">(${f.confidence})</span></div>
+              <div><b>Calories:</b> ${f.nutrition.calories}</div>
+              <div><b>Protein:</b> ${f.nutrition.protein}g | <b>Fat:</b> ${f.nutrition.fat}g | <b>Carbs:</b> ${f.nutrition.carbs}g</div>
+              <div><i style="font-size:.9em;">${f.nutrition.unit || ''}</i></div>
+            </div>`;
+          }
+          document.getElementById('foodItems').innerHTML = html;
+          document.getElementById('resultsSection').style.display = 'block';
+        } else {
+          showError(data.error || 'Detection failed.');
+        }
+      } catch {
+        showError('Network error. Try again.');
+      }
+    }
+
+    // Macro Calculator
+    function calculateMacros() {
+      const age = Number(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const weight = Number(document.getElementById('weight').value);
+      const height = Number(document.getElementById('height').value);
+      const activity = Number(document.getElementById('activity').value || 1.2);
+      const goal = document.getElementById('goal').value;
+      if (!age || !weight || !height || !gender || !activity || !goal) return;
+      let bmr =
+        gender === 'male'
+          ? 88.36 + 13.4 * weight + 4.8 * height - 5.7 * age
+          : 447.6 + 9.2 * weight + 3.1 * height - 4.3 * age;
+      let cal = bmr * activity;
+      if (goal === 'lose') cal -= 500;
+      if (goal === 'gain') cal += 500;
+      let protein = Math.round(weight * 1.6);
+      let fat = Math.round((cal * 0.25) / 9);
+      let carbs = Math.round((cal - (protein * 4 + fat * 9)) / 4);
+      document.getElementById('macroData').innerHTML = `
+        <div class="nutrition-card"><b>Calories</b><br>${Math.round(cal)}</div>
+        <div class="nutrition-card"><b>Protein</b><br>${protein}g</div>
+        <div class="nutrition-card"><b>Fat</b><br>${fat}g</div>
+        <div class="nutrition-card"><b>Carbs</b><br>${carbs}g</div>`;
+      document.getElementById('macroResults').style.display = 'block';
+    }
+
+    // BMI Calculator
+    function calculateBMI() {
+      const w = Number(document.getElementById('bmi-weight').value);
+      const h = Number(document.getElementById('bmi-height').value) / 100;
+      if (!w || !h) return;
+      const bmi = w / (h * h);
+      let status = '';
+      if (bmi < 18.5) status = 'Underweight';
+      else if (bmi < 25) status = 'Normal';
+      else if (bmi < 30) status = 'Overweight';
+      else status = 'Obese';
+      document.getElementById('bmiData').innerHTML = `
+        <div class="nutrition-card"><b>BMI</b><br>${bmi.toFixed(2)}</div>
+        <div class="nutrition-card"><b>Status</b><br>${status}</div>`;
+      document.getElementById('bmiResults').style.display = 'block';
+    }
+
+    // Calorie Tracker
+    let dailyMeals = [];
+    function addMeal() {
+      const name = document.getElementById('meal-name').value;
+      const cal = Number(document.getElementById('meal-calories').value);
+      if (!name || !cal) return;
+      dailyMeals.push({ name, cal });
+      document.getElementById('meal-name').value = '';
+      document.getElementById('meal-calories').value = '';
+      updateTracker();
+    }
+    function updateTracker() {
+      let totalCalories = dailyMeals.reduce((a, x) => a + x.cal, 0);
+      let goal = Number(document.getElementById('daily-goal').value);
+      document.getElementById('trackerData').innerHTML = `
+        <div class="nutrition-card"><b>Total Calories</b><br>${totalCalories}</div>
+        <div class="nutrition-card"><b>Goal</b><br>${goal}</div>
+        <div class="nutrition-card"><b>Remaining</b><br>${goal - totalCalories}</div>`;
+      let html = '';
+      for (let m of dailyMeals) html += `<div>${m.name}: <b>${m.cal}</b> Calories</div>`;
+      document.getElementById('mealList').innerHTML = html;
+      document.getElementById('trackerResults').style.display = 'block';
+    }
+    function resetTracker() {
+      dailyMeals = [];
+      updateTracker();
+    }
+
+    // Body Fat Percentage Calculator Logic
+    const bfGender = document.getElementById('bf-gender');
+    const bfHipRow = document.getElementById('bf-hip-row');
+
+    bfGender.addEventListener('change', () => {
+      if (bfGender.value === 'female') {
+        bfHipRow.style.display = 'flex';
+      } else {
+        bfHipRow.style.display = 'none';
+        document.getElementById('bf-hip').value = '';
+      }
+    });
+
+    function calculateBodyFat() {
+      const gender = bfGender.value;
+      const age = Number(document.getElementById('bf-age').value);
+      const weight = Number(document.getElementById('bf-weight').value);
+      const waist = Number(document.getElementById('bf-waist').value);
+      const hip = Number(document.getElementById('bf-hip').value);
+
+      if (!gender || !age || !weight || !waist || (gender === 'female' && !hip)) {
+        alert('Please fill in all required fields correctly.');
+        return;
+      }
+
+      // Simple approximation formulas (for demo)
+      let bodyFat = 0;
+      if (gender === 'male') {
+        bodyFat = 0.1 * waist - 5;
+      } else {
+        bodyFat = 0.2 * ((waist + Number(hip)) / 2) - 10;
+      }
+      bodyFat = Math.max(2, Math.min(50, bodyFat)); // Clamp to reasonable range
+
+      const bfResult = document.getElementById('bfResult');
+      bfResult.innerHTML = `${bodyFat.toFixed(1)}%`;
+
+      document.getElementById('bodyFatResults').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
